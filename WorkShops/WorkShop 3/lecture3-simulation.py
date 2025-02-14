@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 
 # global variables
 # simulation parameters
-N_IRLAGENT = 2          #number of iterations of IRLplus to perform
+N_IRLAGENT = 3          #number of iterations of IRLplus to perform
 EXPLORE = 0.3           #the explore proportion: (1-EXPLORE) for exloit
 MANUAL_FEEDBACK = 0.1   #reward feedback from human: + and -
 NEUTRAL_FEEDBACK = 0.05 #if no feedback, this reward applied (+)
