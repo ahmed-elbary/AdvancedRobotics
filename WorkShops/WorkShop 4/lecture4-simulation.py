@@ -22,8 +22,8 @@ import matplotlib.pyplot as plt
 
 # global variables
 # simulation parameters
-N_IRLAGENT = 2          #number of iterations of IRLplus to perform
-EXPLORE = 0.3           #the explore proportion: (1-EXPLORE) for exloit
+N_IRLAGENT = 5          #number of iterations of IRLplus to perform
+EXPLORE = 0.4           #the explore proportion: (1-EXPLORE) for exloit
 MANUAL_FEEDBACK = 0.1   #reward feedback from human: + and -
 NEUTRAL_FEEDBACK = 0.05 #if no feedback, this reward applied (+)
 LOGGING = True          #set full logging to terminal or not...
@@ -413,11 +413,17 @@ class IRLAgent:
         plt.show()
 
 
+
+
 ##########################################################
 # Main
 ##########################################################
 if __name__ == "__main__":
+
+    # To run the previous agent
     #irlp = IRLAgent()
+
+    # To run the extended agent
     irlp = IRLAgentPlus()
     irlp.play(N_IRLAGENT)
 

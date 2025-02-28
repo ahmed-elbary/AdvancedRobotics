@@ -31,7 +31,7 @@ y1_sig = 1.0
 
 x2_mean = 0.0
 y2_mean = 0.0
-x2_sig = 1.8
+x2_sig = 3
 y2_sig = 1.0
 ###################
 
@@ -81,6 +81,6 @@ plt.plot(0,0,marker=">",markersize=20,color="black")
 
 
 # uncomment the following line if you want to save the plot as a pdf:
-#plt.savefig('gaussian2d.pdf')
+plt.savefig('gaussian2d.pdf')
 
 plt.show()
