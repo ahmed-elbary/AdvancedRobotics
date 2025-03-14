@@ -1,4 +1,3 @@
-#
 # Advanced Robotics, 2024-2025
 # Paul Baxter
 # Workshop Week 4
@@ -14,8 +13,6 @@
 # Two classes in this file:
 #  1. State: the board/maze (same as in week 2) - line 42
 #  2. IRLAgentPlus: a slightly extended IRL agent, to be explored - line 105
-#
-
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -34,7 +31,6 @@ BOARD_COLS = 4
 WIN_STATE = (0, 3)
 LOSE_STATE = (1, 3)
 START = (2, 0)          #third row, first column
-
 
 ##########################################################
 # The maze environment
@@ -411,6 +407,8 @@ class IRLAgent:
         plt.xlabel("Episode number")
         plt.ylabel("Total reward")
         plt.show()
+
+
 
 
 
