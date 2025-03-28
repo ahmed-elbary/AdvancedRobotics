@@ -5,6 +5,9 @@ import pydmps
 import pydmps.dmp_discrete
 from pydmps.dmp_discrete import DMPs_discrete
 
+
+
+#check the explaination provided in internet
 ############ Load a demonstration trajectory as numpy array from the demos folder  ############
 # Load the trajectory from CSV into a NumPy array
 y_demo = np.loadtxt("c:/Users/Student/Desktop/AdvancedRobotics/WorkShops/WorkShop 9/pydmps/demos/Line.csv", delimiter=",")

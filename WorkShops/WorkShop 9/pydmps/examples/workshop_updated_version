@@ -1,0 +1,38 @@
+import numpy as np
+from pydmps.dmp_discrete import DMPs_discrete  # Using the class you provided
+import matplotlib.pyplot as plt
+
+# Step 1: Load your demonstration trajectory from CSV
+demo_folder = "c:/Users/Student/Desktop/AdvancedRobotics/WorkShops/WorkShop 9/pydmps/demos/"
+demo_file = "Wshape.csv"  # Replace with your actual CSV filename
+y_demo = np.loadtxt(demo_folder + demo_file, delimiter=",")
+print("Loaded trajectory shape:", y_demo.shape)
+
+# Step 2: Create the DMP object
+n_dmps = 2          # 2D trajectory (x and y)
+n_bfs = 200          # Number of Radial Basis Functions
+start_state = y_demo[0]  # Starting point (first point of the demo)
+
+dmp = DMPs_discrete(n_dmps=n_dmps, n_bfs=n_bfs)
+dmp.y0 = start_state  # Set the starting point
+print("DMP created with starting state:", dmp.y0)
+
+# Step 3: Train the DMP weights using imitate_path()
+forcing_term = dmp.imitate_path(y_des=y_demo)
+print("Forcing term shape from imitate_path():", forcing_term.shape)
+print("Trained weights shape:", dmp.w.shape)
+print("Sample weights:\n", dmp.w[:, :5])  # Show first 5 weights for each dimension
+
+# Step 4: Generate the rollout trajectory
+y_pred, dy_pred, ddy_pred = dmp.rollout()  # Assuming 3 outputs based on your error
+print("Rollout trajectory shape:", y_pred.shape)
+
+# Step 5: Plot the results
+plt.plot(y_demo[:, 0], y_demo[:, 1], "k--", label="Demonstration")
+plt.plot(y_pred[:, 0], y_pred[:, 1], "b-", label="Predicted")
+plt.scatter(start_state[0], start_state[1], c="g", label="Start")
+plt.legend()
+plt.title(f"DMP Trajectory (n_bfs={n_bfs})")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.show()
