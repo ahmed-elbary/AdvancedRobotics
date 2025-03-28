@@ -1,4 +1,4 @@
 # Advanced Robotics
-Advanced Robotics Materials and Workshops.
+Advanced Robotics Workshops and Assessments.
 
-All codes for WorkShops folder are refrenceed the workshops materials provided by Dr. Paul Baxter 
+All codes for WorkShops folder are refrenceed, the workshops materials provided by Dr Paul Baxter and Dr Athanasios Polydoros 
