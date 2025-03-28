@@ -28,7 +28,7 @@ print(y_des.shape)
 dmp = pydmps.dmp_discrete.DMPs_discrete(n_dmps=2, n_bfs=10,y0=y_des[:,0])
 
 f_demo = dmp.imitate_path(y_des=y_des, plot=False)
-y_predicted, dy_predicted, ddy_predicted, f_learn = dmp.rollout()
+y_predicted, dy_predicted, ddy_predicted,  = dmp.rollout()
 plt.figure(1, figsize=(6, 6))
 
 plt.plot(y_predicted[:, 0], y_predicted[:, 1], "b", lw=2)
@@ -36,3 +36,4 @@ plt.title("DMP system - draw number 2")
 
 plt.axis("equal")
 plt.show()
+
