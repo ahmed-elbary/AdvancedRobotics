@@ -23,7 +23,9 @@ class LinearDS:
         #    pos: N times 2 array that contains the positions
         # Return:
         #   pred_vel: N times 2 array that contains the velocities predicted from the Linear model vel = A * pos
-       pass
+        
+        return np.dot(pos, A_matrix.T)  # Compute velocity using A*pos
+    pass
 
     def lyapunov_constrains(self,A_indices):
         # This function calculates the constraints for stability of a Linear DS
@@ -32,7 +34,11 @@ class LinearDS:
         #Return:
         #    eigenvalues: a 2-dimensional vector that contains the eigenvalues of matrix A
         # Hint: Use the eigavals method from the linalg package of numpy
-        pass
+        
+        A_matrix = np.reshape(A_indices, (2, 2))
+        eigenvalues = np.linalg.eigvals(A_matrix)  # Compute eigenvalues
+        return eigenvalues
+    pass
 
     def objective_fun(self, A_indices):
         # This method calculates the prediction error between the demonstrated and the predicted velocities
@@ -40,7 +46,14 @@ class LinearDS:
         #    A_indices: a 4-dimensional vector that contains the indices of control Matrix A
         # Return: Scalar, predicition error between the demonstrated and predicted velocities
         # Hint: use the metrics.mean_squared_error from the sklearn package
-        pass
+        A_matrix = np.reshape(A_indices, (2, 2))  # Reshape the vector to a 2x2 matrix
+        pred_vel = self.motion_model(A_matrix, self.demo_positions)  # Get predicted velocities
+        if pred_vel is None:
+            raise ValueError("motion_model returned None. Check its implementation.")
+
+        mse = metrics.mean_squared_error(self.demo_velocities, pred_vel)  # Compute MSE
+        return mse
+    pass
 
     def train_ds(self):
         # Optimize the objective function wrt the constraints using the trust constrain optimization from scipy package
@@ -50,7 +63,7 @@ class LinearDS:
 
         stability_cons = NonlinearConstraint(self.lyapunov_constrains, -1,-1000)
         optimizations_opts = {"disp": True, "maxiter": 10000}
-        res = optimize.minimize(self.objective_fun, A_indices, constraints=[stability_cons],options=optimizations_opts, method="trust-constr")
+        res = optimize.minimize(self.objective_fun, A_indices, constraints=[stability_cons],options=optimizations_opts, method="L-BFGS-B")
 
         optimal_A_indices = res.x
         return optimal_A_indices
@@ -81,10 +94,9 @@ class LinearDS:
         return der
 
 
-    def plot_ds(self,optimal_A_indices):
+    def plot_ds(self, optimal_A_indices, save_path="ds_plot.png"):
         # Create streamplots of the learned DS
-
-        A_matrix = np.reshape(optimal_A_indices,(2,2))
+        A_matrix = np.reshape(optimal_A_indices, (2, 2))
 
         fig, ax = plt.subplots()
         u = np.linspace(-300, 300, 200)
@@ -92,26 +104,29 @@ class LinearDS:
         uu, vv = np.meshgrid(u, v)
         u_vel = np.empty_like(uu)
         v_vel = np.empty_like(vv)
-        # self.eac_matrix[0,1] = np.abs(self.eac_matrix[0,1])
+
         for i in range(0, uu.shape[0]):
             for j in range(0, vv.shape[0]):
                 lat_pos = np.array([[uu[i, j], vv[i, j]]])
-                # lat_pos = self.orig_pos_2_lat_pos(orig_position)
-                lat_vel = np.dot(A_matrix,lat_pos.T).T
-                # orig_vel = np.dot(self.eac_matrix,orig_position.T)
+                lat_vel = np.dot(A_matrix, lat_pos.T).T
                 u_vel[i, j] = lat_vel[0, 0]
                 v_vel[i, j] = lat_vel[0, 1]
 
         ax.streamplot(uu, vv, u_vel, v_vel, density=1)
-        ax.scatter(self.demo_positions[:,0], self.demo_positions[:,1],marker='*', c='r', label="Demonstration")
-        ax.streamplot(uu, vv, u_vel, v_vel, density=3,color='g', linewidth=3, start_points=np.array([self.demo_positions[0, :]]))
+        ax.scatter(self.demo_positions[:, 0], self.demo_positions[:, 1], marker='*', c='r', label="Demonstration")
+        ax.streamplot(uu, vv, u_vel, v_vel, density=3, color='g', linewidth=3, start_points=np.array([self.demo_positions[0, :]]))
         plt.legend(loc=1)
 
-        plt.show()
+        # Save the figure
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')  # High-quality save
+        print(f"Plot saved as {save_path}")
+
+        plt.show()  # Optionally display the plot
+
 
 
 if __name__ == "__main__":
     dynamic_system = LinearDS()
-    dynamic_system.import_demonstration("CShape.csv")
+    dynamic_system.import_demonstration("WShape.csv")
     optimal_params = dynamic_system.train_ds()
-    dynamic_system.plot_ds(optimal_params)
+    dynamic_system.plot_ds(optimal_params, save_path="C:/Users/Student/Desktop/AdvancedRobotics/WorkShops/WorkShop 10/Learning_Linear_DS/plots/WShape_ds_plot.png")
