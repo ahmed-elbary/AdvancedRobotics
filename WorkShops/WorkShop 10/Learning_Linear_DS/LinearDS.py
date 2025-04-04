@@ -63,7 +63,7 @@ class LinearDS:
 
         stability_cons = NonlinearConstraint(self.lyapunov_constrains, -1,-1000)
         optimizations_opts = {"disp": True, "maxiter": 10000}
-        res = optimize.minimize(self.objective_fun, A_indices, constraints=[stability_cons],options=optimizations_opts, method="L-BFGS-B")
+        res = optimize.minimize(self.objective_fun, A_indices, constraints=[stability_cons],options=optimizations_opts, method="trust-constr")
 
         optimal_A_indices = res.x
         return optimal_A_indices
@@ -127,6 +127,6 @@ class LinearDS:
 
 if __name__ == "__main__":
     dynamic_system = LinearDS()
-    dynamic_system.import_demonstration("WShape.csv")
+    dynamic_system.import_demonstration("Line.csv")
     optimal_params = dynamic_system.train_ds()
-    dynamic_system.plot_ds(optimal_params, save_path="C:/Users/Student/Desktop/AdvancedRobotics/WorkShops/WorkShop 10/Learning_Linear_DS/plots/WShape_ds_plot.png")
+    dynamic_system.plot_ds(optimal_params, save_path="C:/Users/Student/Desktop/AdvancedRobotics/WorkShops/WorkShop 10/Learning_Linear_DS/part_a_plots/Line_ds_plot.png")
