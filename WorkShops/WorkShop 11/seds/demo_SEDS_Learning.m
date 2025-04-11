@@ -9,7 +9,7 @@ clc;
 clear;
 close;
 %% User Parameters and Setting
-load('models/recorded_motions/CShape','demos')
+load('C:\Users\Student\Desktop\AdvancedRobotics\WorkShops\WorkShop 11\seds\models\recorded_motions\CShape.mat','demos')
 % the variable 'demos' composed of 3 demosntrations. Each demonstrations is
 % recorded from Tablet-PC at 50Hz. Datas are in millimeters.
 
@@ -50,6 +50,8 @@ if isempty(regexp(path,['GMR_lib' pathsep], 'once'))
 end
 
 %% SEDS learning algorithm
+addpath('C:\Users\Student\Desktop\AdvancedRobotics\WorkShops\WorkShop 11\seds\SEDS_lib')
+
 [x0 , xT, Data, index] = preprocess_demos(demos,dt,tol_cutting); %preprocessing datas
 [Priors_0, Mu_0, Sigma_0] = initialize_SEDS(Data,K); %finding an initial guess for GMM's parameter
 [Priors Mu Sigma]=SEDS_Solver(Priors_0,Mu_0,Sigma_0,Data,options); %running SEDS optimization solver
