@@ -9,7 +9,7 @@ clc;
 clear;
 close;
 %% User Parameters and Setting
-load('D:\University of Lincoln\Semester B\Advanced Robotics\AdvancedRobotics\Assessment2\SEDS\models\recorded_motions\CShape.mat','demos')
+load('D:\University of Lincoln\Semester B\Advanced Robotics\AdvancedRobotics\Assessment2\SEDS\models\recorded_motions\Line.mat','demos')
 % the variable 'demos' composed of 3 demosntrations. Each demonstrations is
 % recorded from Tablet-PC at 50Hz. Datas are in millimeters.
 
@@ -18,7 +18,7 @@ dt = 0.1; %The time step of the demonstrations
 tol_cutting = 1; % A threshold on velocity that will be used for trimming demos
 
 % Training parameters
-K =2 %Number of Gaussian funcitons
+K =1 %Number of Gaussian funcitons
 
 % A set of options that will be passed to the solver. Please type 
 % 'doc preprocess_demos' in the MATLAB command window to get detailed

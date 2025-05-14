@@ -1,70 +1,70 @@
-addpath(genpath('./SEDS_lib')); % Add SEDS helper functions
+clc; clear; close all;
 
-%% STEP 1: Load demonstration data
-load("D:\University of Lincoln\Semester B\Advanced Robotics\AdvancedRobotics\Assessment2\SEDS\models\recorded_motions\WShape.mat");
+%% STEP 1: Load WShape Data
+load('models/recorded_motions/WShape.mat', 'demos')
+dt = 0.1;           % Time step
+tol_cutting = 1;    % Trimming threshold
 
-% Check if 'dt' is defined (required for velocity calculation)
-if ~exist('dt', 'var')
-    error('Time step "dt" not found in WShape.mat');
+% Add libraries
+addpath(genpath('./SEDS_lib'));
+addpath(genpath('./GMR_lib'));
+
+%% STEP 2: Preprocess demonstrations
+[x0, xT, Data, index] = preprocess_demos(demos, dt, tol_cutting);
+d = size(Data, 1) / 2;
+
+%% STEP 3: Train with BIC-based model selection
+K_range = 2:10;
+bic_values = zeros(size(K_range));
+models = cell(size(K_range));
+
+options.tol_mat_bias = 1e-6;
+options.display = 0;
+options.tol_stopping = 1e-10;
+options.max_iter = 200;
+options.objective = 'mse';
+
+for i = 1:length(K_range)
+    K = K_range(i);
+    [Priors0, Mu0, Sigma0] = initialize_SEDS(Data, K);
+    [Priors, Mu, Sigma] = SEDS_Solver(Priors0, Mu0, Sigma0, Data, options);
+    models{i} = struct('Priors', Priors, 'Mu', Mu, 'Sigma', Sigma, 'K', K);
+    
+    % GMR prediction and BIC computation
+    xd_pred = GMR(Priors, Mu, Sigma, Data(1:d,:), 1:d, d+1:2*d);
+    residuals = Data(d+1:2*d,:) - xd_pred;
+    mse = mean(sum(residuals.^2, 1));
+    
+    n_params = K * (1 + 2*d + d*(d+1)/2);
+    n_data = size(Data, 2);
+    bic_values(i) = n_data * log(mse) + n_params * log(n_data);
 end
 
-% Concatenate all demonstrations into one long trajectory
-Xi = []; Xi_dot = [];
-for i = 1:length(demos)
-    demo = demos{i};     % [2 x T]
-    Xi = [Xi, demo];     % Positions
-    % Compute velocity using finite difference
-    vel = diff(demo,1,2) / dt;
-    vel(:,end+1) = vel(:,end); % Pad to keep same length
-    Xi_dot = [Xi_dot, vel];    % Velocities
-end
+%% STEP 4: Choose best model by BIC
+[~, best_idx] = min(bic_values);
+best_model = models{best_idx};
+best_K = K_range(best_idx);
+fprintf('Best number of Gaussians (by BIC): %d\n', best_K);
 
-% Combine positions and velocities into one matrix: Data = [positions; velocities]
-Data = [Xi; Xi_dot];
+%% STEP 5: Plot and Save
 
-nbData = size(Data, 2);
+% Plot 1: BIC vs Number of Gaussians
+figure;
+plot(K_range, bic_values, '-o', 'LineWidth', 2)
+xlabel('Number of Gaussians (K)')
+ylabel('BIC')
+title('BIC vs Number of Gaussians')
+grid on
+saveas(gcf, 'WShape_SEDS_BIC_plot.png')
 
-%% STEP 2: Loop over number of Gaussians and compute BIC
-nbGaussList = 2:10;
-BIC_scores = zeros(1, length(nbGaussList));
-models = cell(1, length(nbGaussList));
-
-for i = 1:length(nbGaussList)
-    nbStates = nbGaussList(i);
-    
-    % Initialize GMM parameters
-    [Priors0, Mu0, Sigma0] = initialize_SEDS(Data, nbStates);
-    
-    % Set solver options
-    opt.display = 'off';
-    opt.tol_mat_bias = 1e-8;
-    
-    % Train SEDS model
-    [Priors, Mu, Sigma] = SEDS_Solver(Data, Priors0, Mu0, Sigma0, opt);
-    
-    % Store model
-    model.Priors = Priors;
-    model.Mu = Mu;
-    model.Sigma = Sigma;
-    model.nbStates = nbStates;
-    models{i} = model;
-    
-    % Compute log-likelihood and BIC
-    loglik = compute_log_likelihood(Data, model);
-    k = nbStates * (2*4 + 10); % Approximate number of parameters
-    BIC_scores(i) = -2 * loglik + k * log(nbData);
-end
-
-%% STEP 3: Select model with best (lowest) BIC
-[~, bestIdx] = min(BIC_scores);
-bestModel = models{bestIdx};
-best_nGauss = nbGaussList(bestIdx);
-fprintf('Optimal number of Gaussians (by BIC): %d\n', best_nGauss);
-
-%% STEP 4: Plot the results
-figure('Name', 'SEDS - Learned Velocity Field');
-plotSEDSStreamLines(bestModel, Xi, [1:2], [3:4], Xi(:,1), 0.01); % Streamline plotting
-title(['WShape Reproduction using SEDS (n\_Gauss = ' num2str(best_nGauss) ')']);
-xlabel('x'); ylabel('y');
-axis equal;
-grid on;
+% Plot 2: Streamlines for Best Model (trajectory reproduction)
+figure;
+plotStreamLines(best_model.Priors, best_model.Mu, best_model.Sigma, [-300 300 -300 300])
+hold on
+plot(Data(1,:), Data(2,:), 'r.')
+plot(0, 0, 'k*', 'markersize', 15, 'linewidth', 2)
+xlabel('\xi_1'); ylabel('\xi_2');
+title(sprintf('WShape Reproduction using SEDS (K = %d)', best_K));
+axis equal
+grid on
+saveas(gcf, 'WShape_SEDS_BestTrajectory.png')
