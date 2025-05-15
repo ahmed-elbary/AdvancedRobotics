@@ -1,5 +1,3 @@
-# Re-run everything after kernel reset, including agents and training + updated bar chart
-
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -71,9 +69,9 @@ class BaseAgent:
 
     def shaped_feedback(self, state):
         if state == self.env.correct_table:
-            return 0.8
+            return 0.2
         elif state == self.env.wrong_table:
-            return 0
+            return -0.2
         else:
             return 0.0
 
@@ -112,8 +110,8 @@ class TAMER(BaseAgent):
                 break
         return total_reward, steps, state == self.env.correct_table
 
-# ---------------- TRAINING ----------------
-def run_training(agent, episodes=30):
+# ---------------- TRAINING & PLOTTING ----------------
+def run_training(agent, episodes=100):
     rewards, steps, successes, times = [], [], [], []
     for _ in range(episodes):
         start = time.time()
@@ -131,29 +129,45 @@ agent_tamer = TAMER(env)
 r1, s1, win1, t1 = run_training(agent_irl)
 r2, s2, win2, t2 = run_training(agent_tamer)
 
-# ---------------- BAR CHART ----------------
-avg_reward_irl = np.mean(r1)
-avg_reward_tamer = np.mean(r2)
-avg_steps_irl = np.mean(s1)
-avg_steps_tamer = np.mean(s2)
-success_rate_irl = np.sum(win1) / len(win1)
-success_rate_tamer = np.sum(win2) / len(win2)
+episodes = np.arange(1, 101)
 
-metrics = ['Avg Reward', 'Avg Steps', 'Success Rate']
-irl_values = [avg_reward_irl, avg_steps_irl, success_rate_irl]
-tamer_values = [avg_reward_tamer, avg_steps_tamer, success_rate_tamer]
-
-x = np.arange(len(metrics))
-width = 0.35
-
-plt.figure(figsize=(8, 5))
-plt.bar(x - width/2, irl_values, width, label='IRL')
-plt.bar(x + width/2, tamer_values, width, label='TAMER')
-plt.ylabel('Metric Value')
-plt.title('Average Performance Comparison')
-plt.xticks(x, metrics)
+# Plot rewards
+plt.figure()
+plt.plot(episodes, r1, label="IRL")
+plt.plot(episodes, r2, label="TAMER")
+plt.xlabel("Episode")
+plt.ylabel("Reward")
+plt.title("Reward per Episode")
 plt.legend()
-plt.grid(True, axis='y')
-plt.tight_layout()
-plt.savefig("average_comparison_bar_chart.png")
+plt.grid(True)
 plt.show()
+plt.savefig("reward_plot.png")
+plt.close()
+
+# Plot steps
+plt.figure()
+plt.plot(episodes, s1, label="IRL")
+plt.plot(episodes, s2, label="TAMER")
+plt.xlabel("Episode")
+plt.ylabel("Steps")
+plt.title("Steps per Episode")
+plt.legend()
+plt.grid(True)
+plt.show()
+plt.savefig("steps_plot.png")
+plt.close()
+
+# Plot success rate (cumulative)
+plt.figure()
+plt.plot(episodes, np.cumsum(win1)/episodes, label="IRL")
+plt.plot(episodes, np.cumsum(win2)/episodes, label="TAMER")
+plt.xlabel("Episode")
+plt.ylabel("Success Rate")
+plt.title("Cumulative Success Rate")
+plt.legend()
+plt.grid(True)
+plt.show()
+plt.savefig("success_rate_plot.png")
+plt.close()
+
+"Training complete. Plots saved as 'reward_plot.png', 'steps_plot.png', and 'success_rate_plot.png'."
